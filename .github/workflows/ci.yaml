@@ -60,3 +60,9 @@ jobs:
       - name: Build Android AAB
         run: ./gradlew bundleRelease
         working-directory: android
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
