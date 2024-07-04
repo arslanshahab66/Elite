@@ -21,7 +21,11 @@ jobs:
       - name: Pull changes from develop
         run: |
           git fetch origin develop
-          git merge origin/develop
+          git merge origin/develop --allow-unrelated-histories || {
+            echo "Merge conflicts occurred. Please resolve conflicts and retry.";
+            exit 1;
+          }
+          git push origin HEAD
 
       - name: Cache Node.js modules
         uses: actions/cache@v3
