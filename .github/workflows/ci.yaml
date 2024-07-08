@@ -66,3 +66,65 @@ jobs:
         with:
           name: app-release.aab
           path: android/app/build/outputs/bundle/release/app-release.aab
+
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install --frozen-lockfile
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+
+      - name: Install CocoaPods
+        run: pod install --project-directory=ios
+
+      - name: Decrypt certificates and provisioning profile
+        run: |
+          echo $CERTIFICATE_P12 | base64 --decode > certificate.p12
+          echo $PROVISIONING_PROFILE | base64 --decode > provisioning_profile.mobileprovision
+        env:
+          CERTIFICATE_P12: ${{ secrets.CERTIFICATE_P12 }}
+          PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
+
+      - name: Set up signing keychain
+        run: |
+          security create-keychain -p "" build.keychain
+          security import certificate.p12 -t agg -k ~/Library/Keychains/build.keychain -P $CERTIFICATE_PASSWORD -A
+          security list-keychains -s ~/Library/Keychains/build.keychain
+          security default-keychain -s ~/Library/Keychains/build.keychain
+          security unlock-keychain -p "" ~/Library/Keychains/build.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" ~/Library/Keychains/build.keychain
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+
+      - name: Build iOS app
+        run: bundle exec fastlane build
+        working-directory: ios
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.ipa
+          path: ios/build/App.ipa
