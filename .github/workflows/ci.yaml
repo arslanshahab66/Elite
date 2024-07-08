@@ -117,4 +117,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: app-release.ipa
-          path: ios/build/App.ipa
+          path: ios/build/generated/ios/Elite.ipa
