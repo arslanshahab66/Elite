@@ -111,7 +111,7 @@ jobs:
       - name: Build iOS app
         working-directory: ios
         run: |
-        xcodebuild -workspace Elite.xcworkspace -scheme Elite -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15 Pro Max,OS=17.4' build
+          xcodebuild -workspace Elite.xcworkspace -scheme Elite -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15 Pro Max,OS=17.4' build
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v3
