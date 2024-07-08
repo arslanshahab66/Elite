@@ -108,17 +108,6 @@ jobs:
           CERTIFICATE_P12: ${{ secrets.CERTIFICATE_P12 }}
           PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
 
-      - name: Set up signing keychain
-        run: |
-          security create-keychain -p "" build.keychain
-          security import certificate.p12 -t agg -k ~/Library/Keychains/build.keychain -P $CERTIFICATE_PASSWORD -A
-          security list-keychains -s ~/Library/Keychains/build.keychain
-          security default-keychain -s ~/Library/Keychains/build.keychain
-          security unlock-keychain -p "" ~/Library/Keychains/build.keychain
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" ~/Library/Keychains/build.keychain
-        env:
-          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
-
       - name: Build iOS app
         run: bundle exec fastlane build
         working-directory: ios
